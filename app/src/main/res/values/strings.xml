@@ -59,4 +59,5 @@
     <!-- Label for dropdown menu option if the pet is female [CHAR LIMIT=20] -->
     <string name="gender_female">Female</string>
     <string name="add_pet">Add pet</string>
+    <string name="content_authority">com.devyat.petshelter</string>
 </resources>

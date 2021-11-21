@@ -17,6 +17,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class CatalogActivity extends AppCompatActivity {
     PetDbHelper mPetDbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,30 +34,32 @@ public class CatalogActivity extends AppCompatActivity {
         mPetDbHelper = new PetDbHelper(this);
         displayDatabaseInfo();
     }
-    private void insertDummyData(){
+
+    private void insertDummyData() {
 
         mPetDbHelper.insertPet("Garfield", "Tabby", PetDbHelper.PetGender.MALE, 5);
     }
 
-    private void deleteAllPets(){
+    private void deleteAllPets() {
         mPetDbHelper.deleteAllPets();
+        displayDatabaseInfo();
     }
+
     private void displayDatabaseInfo() {
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
         PetDbHelper mDbHelper = new PetDbHelper(this);
-
-        // Create and/or open a database to read from it
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        // Perform this raw SQL query "SELECT * FROM pets"
-        // to get a Cursor that contains all rows from the pets table.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + PetContract.PetEntry.TABLE_NAME, null);
+        Cursor cursor = db.query(PetContract.PetEntry.TABLE_NAME, null, null, null, null, null, null);
         try {
-            // Display the number of rows in the Cursor (which reflects the number of rows in the
-            // pets table in the database).
-            TextView displayView = (TextView) findViewById(R.id.text_view_pet);
-            displayView.setText("Number of rows in pets database table: " + cursor.getCount());
+            TextView displayView = findViewById(R.id.text_view_pet);
+            while(cursor.moveToNext()){
+                int id = cursor.getInt(cursor.getColumnIndex(PetContract.PetEntry._ID));
+                int gender = cursor.getInt(cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_GENDER));
+                int weight = cursor.getInt(cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_WEIGHT));
+                String name = cursor.getString(cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_NAME));
+                String breed = cursor.getString(cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_BREED));
+
+                displayView.append("\n" + id + " - " + name + " - " + breed + " - " + gender + " - " + weight);
+            }
         } finally {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
@@ -70,6 +73,12 @@ public class CatalogActivity extends AppCompatActivity {
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_catalog, menu);
         return true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        displayDatabaseInfo();
     }
 
     @Override
