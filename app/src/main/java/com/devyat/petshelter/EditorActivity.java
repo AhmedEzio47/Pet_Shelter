@@ -2,6 +2,9 @@ package com.devyat.petshelter;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
+
+import android.content.ContentValues;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -12,6 +15,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.devyat.petshelter.data.PetContract;
 import com.devyat.petshelter.data.PetDbHelper;
 
 public class EditorActivity extends AppCompatActivity {
@@ -90,19 +95,20 @@ public class EditorActivity extends AppCompatActivity {
         String weightString = mWeightEditText.getText().toString().trim();
         int weight = Integer.parseInt(weightString);
 
-        // Create database helper
-        PetDbHelper mDbHelper = new PetDbHelper(this);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(PetContract.PetEntry.COLUMN_PET_NAME, nameString);
+        contentValues.put(PetContract.PetEntry.COLUMN_PET_BREED, breedString);
+        contentValues.put(PetContract.PetEntry.COLUMN_PET_GENDER, PetDbHelper.mapGender(mGender));
+        contentValues.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, weight);
+        Uri newRow = getContentResolver().insert(PetContract.PetEntry.CONTENT_URI, contentValues);
 
-        // Insert a new row for pet in the database, returning the ID of that new row.
-        long newRowId = mDbHelper.insertPet(nameString, breedString, mGender, weight);
 
         // Show a toast message depending on whether or not the insertion was successful
-        if (newRowId == -1) {
-            // If the row ID is -1, then there was an error with insertion.
-            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        if (newRow == null) {
+            Toast.makeText(this, getString(R.string.editor_insert_pet_failed), Toast.LENGTH_SHORT).show();
         } else {
             // Otherwise, the insertion was successful and we can display a toast with the row ID.
-            Toast.makeText(this, "Pet saved with row id: " + newRowId, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.editor_insert_pet_successful), Toast.LENGTH_SHORT).show();
         }
     }
 

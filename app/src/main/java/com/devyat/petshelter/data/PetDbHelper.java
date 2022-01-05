@@ -46,7 +46,7 @@ public class PetDbHelper extends SQLiteOpenHelper {
         db.delete(PetContract.PetEntry.TABLE_NAME, null, null);
     }
 
-    private int mapGender(PetGender gender){
+    public static int mapGender(PetGender gender){
         switch (gender){
             case UNKNOWN:
                 return PetContract.PetEntry.GENDER_UNKNOWN;
