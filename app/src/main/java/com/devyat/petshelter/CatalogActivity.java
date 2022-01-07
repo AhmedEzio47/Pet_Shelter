@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,12 +24,9 @@ public class CatalogActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
-                startActivity(intent);
-            }
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+            startActivity(intent);
         });
 
         mPetDbHelper = new PetDbHelper(this);
@@ -36,8 +34,8 @@ public class CatalogActivity extends AppCompatActivity {
     }
 
     private void insertDummyData() {
-
         mPetDbHelper.insertPet("Garfield", "Tabby", PetDbHelper.PetGender.MALE, 5);
+        displayDatabaseInfo();
     }
 
     private void deleteAllPets() {
@@ -46,12 +44,12 @@ public class CatalogActivity extends AppCompatActivity {
     }
 
     private void displayDatabaseInfo() {
-        PetDbHelper mDbHelper = new PetDbHelper(this);
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = db.query(PetContract.PetEntry.TABLE_NAME, null, null, null, null, null, null);
+
+        Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, null, null, null, null);
         try {
             TextView displayView = findViewById(R.id.text_view_pet);
-            while(cursor.moveToNext()){
+            displayView.setText("");
+            while (cursor.moveToNext()) {
                 int id = cursor.getInt(cursor.getColumnIndex(PetContract.PetEntry._ID));
                 int gender = cursor.getInt(cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_GENDER));
                 int weight = cursor.getInt(cursor.getColumnIndex(PetContract.PetEntry.COLUMN_PET_WEIGHT));
@@ -88,13 +86,11 @@ public class CatalogActivity extends AppCompatActivity {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
                 insertDummyData();
-                displayDatabaseInfo();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
                 // Do nothing for now
                 deleteAllPets();
-                displayDatabaseInfo();
                 return true;
         }
         return super.onOptionsItemSelected(item);

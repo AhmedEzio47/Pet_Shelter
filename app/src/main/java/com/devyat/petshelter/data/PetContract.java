@@ -7,8 +7,8 @@ import android.provider.BaseColumns;
 public final class PetContract {
     public static final String CONTENT_AUTHORITY = "com.devyat.petshelter";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-    public static final String PATH_PETS = "pets";
-    public static final String PATH_PET_ID = "pets/#";
+    public static final String PATH_PETS = "/pets";
+    public static final String PATH_PET_ID = "/pets/#";
     private PetContract(){}
     public static final class PetEntry implements BaseColumns{
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
