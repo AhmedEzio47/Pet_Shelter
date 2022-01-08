@@ -1,6 +1,11 @@
 package com.devyat.petshelter;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -19,7 +24,7 @@ import com.devyat.petshelter.data.PetContract;
 import com.devyat.petshelter.data.PetDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,8 +34,15 @@ public class CatalogActivity extends AppCompatActivity {
             Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
             startActivity(intent);
         });
-        displayDatabaseInfo();
+        LoaderManager.getInstance(this).initLoader(URL_LOADER, null, this);
+        mPetsListView = findViewById(R.id.pets_list);
+        View emptyView = findViewById(R.id.empty_view);
+        mPetsListView.setEmptyView(emptyView);
+        mPetCursorAdapter = new PetCursorAdapter(this, null);
+        mPetsListView.setAdapter(mPetCursorAdapter);
     }
+    ListView mPetsListView;
+    PetCursorAdapter mPetCursorAdapter;
 
     private void insertDummyData() {
         ContentValues contentValues = new ContentValues();
@@ -39,12 +51,10 @@ public class CatalogActivity extends AppCompatActivity {
         contentValues.put(PetContract.PetEntry.COLUMN_PET_GENDER, 1);
         contentValues.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, 4);
         getContentResolver().insert(PetContract.PetEntry.CONTENT_URI, contentValues);
-        displayDatabaseInfo();
     }
 
     private void deleteAllPets() {
         getContentResolver().delete(PetContract.PetEntry.CONTENT_URI, null, null);
-        displayDatabaseInfo();
     }
 
     private void displayDatabaseInfo() {
@@ -69,7 +79,6 @@ public class CatalogActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        displayDatabaseInfo();
     }
 
     @Override
@@ -87,5 +96,28 @@ public class CatalogActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    static private final int  URL_LOADER = 0;
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        switch (id){
+            case URL_LOADER:
+                return new CursorLoader(this, PetContract.PetEntry.CONTENT_URI, null, null, null, null);
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        mPetCursorAdapter.swapCursor(data);
+        mPetsListView.setAdapter(mPetCursorAdapter);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        mPetCursorAdapter.swapCursor(null);
+        mPetsListView.setAdapter(mPetCursorAdapter);
     }
 }
