@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -36,6 +37,15 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         });
         LoaderManager.getInstance(this).initLoader(URL_LOADER, null, this);
         mPetsListView = findViewById(R.id.pets_list);
+        mPetsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(getApplicationContext(), EditorActivity.class);
+                Uri uri = Uri.withAppendedPath(PetContract.PetEntry.CONTENT_URI, String.valueOf(id));
+                intent.putExtra("uri", uri);
+                startActivity(intent);
+            }
+        });
         View emptyView = findViewById(R.id.empty_view);
         mPetsListView.setEmptyView(emptyView);
         mPetCursorAdapter = new PetCursorAdapter(this, null);
@@ -55,17 +65,6 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     private void deleteAllPets() {
         getContentResolver().delete(PetContract.PetEntry.CONTENT_URI, null, null);
-    }
-
-    private void displayDatabaseInfo() {
-
-        Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, null, null, null, null);
-
-            ListView petsListView = findViewById(R.id.pets_list);
-            View emptyView = findViewById(R.id.empty_view);
-            petsListView.setEmptyView(emptyView);
-            petsListView.setAdapter(new PetCursorAdapter(this, cursor));
-//            cursor.close();
     }
 
     @Override
